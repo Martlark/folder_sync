@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from pathlib import Path
 from shutil import copy2
 
@@ -10,7 +11,14 @@ logger.setLevel(os.getenv("LOG_LEVEL", logging.INFO))
 logger.addHandler(logging.StreamHandler())
 
 
-def should_copy(target_file, source_file):
+def should_copy(target_file: Path, source_file: Path) -> bool:
+    """
+    return true if source_file should be sent to target_file
+
+    :param target_file:
+    :param source_file:
+    :return:
+    """
     if not source_file.is_file():
         return False
 
@@ -22,17 +30,40 @@ def should_copy(target_file, source_file):
     return False
 
 
-def sync_file(target_file, source_file):
+def sync_file(target_file: Path, source_file: Path):
+    """
+    copy the file, preserving as many attributes as possible
+
+    :param target_file:
+    :param source_file:
+    """
     copy2(source_file, target_file)
 
 
-@click.command()
-@click.option('--source', help='source folder(s), if different from --target', type=click.Path(dir_okay=True, file_okay=False, exists=True),
-              multiple=True, default=None)
-@click.option('--pattern', help='glob definition default=**/*.jsx', default='**/*.jsx')
-@click.option('--target', help='target folders(s)', type=click.Path(dir_okay=True, file_okay=False, exists=True), multiple=True,
-              required=True)
+def run_forever(pattern, source, target, timed):
+    """
+    run in infinite loop, pausing, timed seconds each loop
+
+    :param pattern:
+    :param source:
+    :param target:
+    :param timed:
+    """
+    while True:
+        reconcile(target, source, pattern)
+        print('.', end=None)
+        time.sleep(timed)
+
+
 def reconcile(target, source, pattern):
+    """
+    sync all folders
+
+    :param target:
+    :param source:
+    :param pattern:
+    :return:
+    """
     files_checked = 0
     files_updated = 0
     if not source:
@@ -46,13 +77,13 @@ def reconcile(target, source, pattern):
             pattern = f"**/{pattern}"
 
         for s in source:
-            logger.debug('source', s)
+            logger.debug(f'source:{s}')
             for p in Path(s).glob(pattern):
                 files_checked += 1
                 rel = p.relative_to(s)
-                logger.debug(p.is_file(), p, rel)
+                logger.debug(f'{p.is_file()}, {p}, {rel}')
                 target_file = target_path / rel
-                logger.debug('target_file', target_file)
+                logger.debug(f'target_file {target_file}')
                 if not target_file.parent.exists():
                     logger.info(f'mkdir: {target_file.parent}')
                     target_file.parent.mkdir(exist_ok=True)
@@ -63,5 +94,22 @@ def reconcile(target, source, pattern):
 
     logger.info(f'checked: {files_checked} updated: {files_updated}')
 
+
+@click.command()
+@click.option('--source', help='source folder(s), if different from --target',
+              type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              multiple=True, default=None)
+@click.option('--pattern', help='glob definition default=**/*.jsx', default='**/*.jsx')
+@click.option('--target', help='target folders(s)', type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              multiple=True,
+              required=True)
+@click.option('--timed', help='number of seconds to wait between checks', type=click.INT)
+def cli(target, source, pattern, timed):
+    if timed:
+        run_forever(pattern, source, target, timed)
+    else:
+        reconcile(target, source, pattern)
+
+
 if __name__ == "__main__":
-    reconcile()
+    cli()

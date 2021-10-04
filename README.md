@@ -1,4 +1,9 @@
-Python package to sync folders.
+folder_sync
+===========
+
+Python package to sync folders.  Especially useful for shared code
+in projects with multiple sub projects where using a package manager
+seems excessive.
 
 usage:
 ======
@@ -19,15 +24,45 @@ Run from the `Project` root.
 
 Then the two folders, and all sub folders, will be kept in sync.
 
+Installation
+============
+
+Install directly from the github repo:
+
+    pip install git+git://github.com/Martlark/folder_sync.git#egg=folder_sync
+
+PyCharm
+-------
+
+Add as a file watcher, selecting folder_sync from the venv scripts/bin
+directory.  By default `folder_sync` looks for *.jsx files.  Change this
+with the `--patern` option.  Pick the correct `file type` to match.
+
+When you save any file of `file type` the folders will be synced.
+
 Options
 =======
 
---source 
---------
+--target folder
+---------------
 
-Specify one or more source files to sync into one or more target folders
+Specify one or more target folders.
+Use the option multiple times to allow multiple target folders.
 
---pattern
----------
+--source folder
+---------------
+
+Specify one or more source files to sync into one or more target folders.
+Use the option multiple times to allow multiple source folders.  When this
+option is not given, `--target` folders are used both as the target and the 
+source.
+
+--pattern *.js
+--------------
 
 The file pattern to sync.  By default, this is `*.jsx`.
+
+--timed seconds
+---------------
+
+Stay running and check for directory synchronization every `--timed` seconds
