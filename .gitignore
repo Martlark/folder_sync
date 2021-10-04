@@ -1,0 +1,5 @@
+venv*
+.idea
+sync-source-1
+sync-source-2
+folder_sync.egg-info

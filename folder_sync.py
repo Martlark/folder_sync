@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from shutil import copy2
 
 import click
 
@@ -20,25 +21,32 @@ def should_copy(target_file, source_file):
     return False
 
 
+def sync_file(target_file, source_file):
+    copy2(target_file, source_file)
+
+
 @click.command()
-@click.option('--source', help='source folder(s)', type=click.Path(dir_okay=True, file_okay=False, exists=True),
-              multiple=True, required=True)
-@click.option('--extension', help='glob definition default=**/*.jsx', default='**/*.jsx')
-@click.option('--target', help='target folders(s)', type=click.Path(dir_okay=True, file_okay=False), multiple=True,
+@click.option('--source', help='source folder(s), if different from --target', type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              multiple=True, default=None)
+@click.option('--pattern', help='glob definition default=**/*.jsx', default='**/*.jsx')
+@click.option('--target', help='target folders(s)', type=click.Path(dir_okay=True, file_okay=False, exists=True), multiple=True,
               required=True)
-def reconcile(target, source, extension):
+def reconcile(target, source, pattern):
     files_checked = 0
     files_updated = 0
+    if not source:
+        source = target
+
     for t in target:
         target_path = Path(t)
         target_path.mkdir(exist_ok=True)
 
-        if not extension.startswith('**/'):
-            extension = f"**/{extension}"
+        if not pattern.startswith('**/'):
+            pattern = f"**/{pattern}"
 
         for s in source:
             logger.debug('source', s)
-            for p in Path(s).glob(extension):
+            for p in Path(s).glob(pattern):
                 files_checked += 1
                 rel = p.relative_to(s)
                 logger.debug(p.is_file(), p, rel)
@@ -49,13 +57,9 @@ def reconcile(target, source, extension):
                 if should_copy(target_file, p):
                     files_updated += 1
                     logger.info(f'updating: {target_file}')
-                    target_file.write_text(p.read_text())
+                    sync_file(target_file, p)
 
     logger.info(f'checked: {files_checked} updated: {files_updated}')
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+if __name__ == "__main__":
     reconcile()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
