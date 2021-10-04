@@ -1,11 +1,12 @@
 import logging
+import os
 from pathlib import Path
 from shutil import copy2
 
 import click
 
 logger = logging.getLogger('folder_sync')
-logger.setLevel(logging.INFO)
+logger.setLevel(os.getenv("LOG_LEVEL", logging.INFO))
 logger.addHandler(logging.StreamHandler())
 
 
@@ -22,7 +23,7 @@ def should_copy(target_file, source_file):
 
 
 def sync_file(target_file, source_file):
-    copy2(target_file, source_file)
+    copy2(source_file, target_file)
 
 
 @click.command()
@@ -52,8 +53,9 @@ def reconcile(target, source, pattern):
                 logger.debug(p.is_file(), p, rel)
                 target_file = target_path / rel
                 logger.debug('target_file', target_file)
-                logger.debug(f'mkdir: {target_file.parent}')
-                target_file.parent.mkdir(exist_ok=True)
+                if not target_file.parent.exists():
+                    logger.info(f'mkdir: {target_file.parent}')
+                    target_file.parent.mkdir(exist_ok=True)
                 if should_copy(target_file, p):
                     files_updated += 1
                     logger.info(f'updating: {target_file}')
