@@ -34,8 +34,8 @@ Install directly from the github repo:
 PyCharm
 -------
 
-Add as a file watcher, selecting folder_sync from the venv scripts/bin
-directory.  By default `folder_sync` looks for *.jsx files.  Change this
+Add as a file watcher, selecting `folder_sync` from the virtual env scripts/bin
+directory.  By default `folder_sync` looks for `*.jsx` files.  Change this
 with the `--patern` option.  Pick the correct `file type` to match.
 
 When you save any file of `file type` the folders will be synced.
