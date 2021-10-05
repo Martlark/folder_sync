@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='py_sync',
-    version='0.4.0',
+    version='1.0.0',
     py_modules=['py_sync'],
     install_requires=[
         'Click',
