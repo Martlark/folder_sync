@@ -2,4 +2,6 @@ venv*
 .idea
 sync-source-1
 sync-source-2
-folder_sync.egg-info
+py_sync.egg-info
+sync-target
+test/temp
