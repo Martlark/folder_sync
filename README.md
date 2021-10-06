@@ -63,8 +63,8 @@ Use the option multiple times to allow multiple source folders.  When this
 option is not given, `--target` folders are used both as the target and the 
 source.
 
---pattern **/*
---------------
+--pattern
+---------
 
 The file pattern to sync.  By default, this is all files, ie: `**/*`.
 

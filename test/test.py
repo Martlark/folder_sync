@@ -139,5 +139,37 @@ class MyTestCase(unittest.TestCase):
         self.assertSameFile(sf_1, Path(t2 / file_name_3))
         self.assertSameFile(sf_1, Path(t3 / file_name_3))
 
+    def test_target_folder_and_sync(self):
+        runner = CliRunner()
+        t1 = self.make_dir("test_target_1")
+        t2 = self.make_dir(".test_target_2")
+        file_name_1 = "temp_1.jsx"
+        file_name_2 = "temp_2.jsx"
+
+        tf_1 = Path(t1 / file_name_1)
+        tf_2 = Path(t2 / file_name_2)
+        tf_1.write_text('hello_1')
+        tf_2.write_text('hello_2')
+
+        s1 = self.make_dir(".test_syncfiles_1")
+        s2 = self.make_dir(".test_syncfiles_2")
+        s3 = self.make_dir(".test_syncfiles_3")
+        sf_name_1 = "flong.pootle"
+
+        sf_1 = Path(s1 / sf_name_1)
+        sf_2 = Path(s2 / sf_name_1)
+        sf_3 = Path(s3 / sf_name_1)
+        sf_1.write_text('hello_1')
+
+        result = runner.invoke(cli, [f'--target', t2, f'--target', t1, f'--syncfiles', f'{sf_1},{sf_2},{sf_3}'])
+
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertSameFile(sf_1, Path(s2 / sf_name_1))
+        self.assertSameFile(sf_1, Path(s2 / sf_name_1))
+        self.assertSameFile(sf_1, Path(s3 / sf_name_1))
+
+        self.assertSameFile(tf_1, Path(t2 / file_name_1))
+        self.assertSameFile(tf_2, Path(t1 / file_name_2))
+
         if __name__ == '__main__':
             unittest.main()
